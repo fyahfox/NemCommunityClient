@@ -7,23 +7,19 @@ import java.io.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
-// TODO 20141108: fix javadoc remove commented out code
-// TODO 20141109: done.
-
 /**
  * Allows the starting of components as separate threads.
  */
 public class JavaThreadBuilder implements JavaSpawnBuilder {
 	private static final Logger LOGGER = Logger.getLogger(JavaThreadBuilder.class.getName());
-	final public static ExecutorService service = Executors.newFixedThreadPool(20); // TODO 20141108: why 2?
+	final public static ExecutorService service = Executors.newFixedThreadPool(20); // TODO 20141108: why 20 ... how many threads do you expect?
 
 	private String[] arguments;
 
 	/**
-	 * Creates a new Java thread builder. 
-	 * Depending on the node type, the configuration file name and node type are passed to common starter.
+	 * Creates a new Java thread builder.
 	 *
-	 * @param nodeType
+	 * @param nodeType The node type to start. This is used to determine the configuration file name and node type that are passed to common starter.
 	 */
 	public JavaThreadBuilder(final NemNodeType nodeType) {
 		final String configFilePath = nodeType == NemNodeType.NCC ? "ncc-config.properties" : "nis-config.properties";
@@ -31,20 +27,12 @@ public class JavaThreadBuilder implements JavaSpawnBuilder {
 		arguments = new String[] { "-config", configFilePath, nodeTypeText };
 	}
 
-	/**
-	 * Since threads are spawned, no additional process logs are required.
-	 *
-	 * @param logFile The log file.
-	 */
+	@Override
 	public void setLogFile(final File logFile) {
-		// TODO 20141108: why is this all commented out?
-		// TODO 20141109: T-J in case threads are started then there is no need to have additional 
-		// TODO           logfiles for the spawning
+		// new threads will share the same process log file, so no new log files need to be created.
 	}
 
-	/**
-	 * Spawns a new thread to start the component. 
-	 */
+	@Override
 	public void start() throws IOException {
 		LOGGER.info(String.format("Starting Java thread: CommonStarter.start(%s).", arguments.toString()));
 		service.submit(() -> CommonStarter.start(arguments));
